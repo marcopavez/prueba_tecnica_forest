@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/bikerental/api/internal/auth"
-	"github.com/bikerental/api/internal/db"
+	"github.com/bikerental/api/internal/database"
 	"github.com/bikerental/api/internal/handlers"
 )
 
@@ -23,13 +23,9 @@ func setupTestDB(t *testing.T) *sql.DB {
 	f.Close()
 	t.Cleanup(func() { os.Remove(f.Name()) })
 
-	database, err := db.New(f.Name())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := db.Migrate(database); err != nil {
-		t.Fatal(err)
-	}
+	dbPath := ""
+	database := database.Initialize(dbPath)
+
 	t.Cleanup(func() { database.Close() })
 	return database
 }

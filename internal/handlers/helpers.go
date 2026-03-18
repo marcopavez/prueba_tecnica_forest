@@ -5,16 +5,16 @@ import (
 	"net/http"
 )
 
-func respond(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v)
+func respond(response http.ResponseWriter, status int, v any) {
+	response.Header().Set("Content-Type", "application/json")
+	response.WriteHeader(status)
+	json.NewEncoder(response).Encode(v)
 }
 
-func respondError(w http.ResponseWriter, status int, msg string) {
-	respond(w, status, map[string]string{"error": msg})
+func respondError(response http.ResponseWriter, status int, msg string) {
+	respond(response, status, map[string]string{"error": msg})
 }
 
-func decode(r *http.Request, v any) error {
-	return json.NewDecoder(r.Body).Decode(v)
+func decode(request *http.Request, v any) error {
+	return json.NewDecoder(request.Body).Decode(v)
 }

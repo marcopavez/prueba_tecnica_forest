@@ -23,6 +23,7 @@ func NewJWTAuth(secret string) *JWTAuth {
 }
 
 func (j *JWTAuth) Generate(userID int64, email, firstName, lastName string) (string, error) {
+
 	claims := Claims{
 		Email:     email,
 		FirstName: firstName,
@@ -32,23 +33,43 @@ func (j *JWTAuth) Generate(userID int64, email, firstName, lastName string) (str
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
 		},
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.secret)
+
+	signedToken, err := token.SignedString(j.secret)
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
 }
 
-func (j *JWTAuth) Validate(tokenStr string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method")
-		}
-		return j.secret, nil
-	})
+func (j *JWTAuth) Validate(tokenString string) (*Claims, error) {
+	parsedToken, err := jwt.ParseWithClaims(tokenString, &Claims{}, j.provideSigningKey)
 	if err != nil {
 		return nil, err
 	}
-	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+
+	claims, err := j.extractClaims(parsedToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
+}
+
+func (j *JWTAuth) provideSigningKey(token *jwt.Token) (interface{}, error) {
+	_, isHMAC := token.Method.(*jwt.SigningMethodHMAC)
+	if !isHMAC {
+		return nil, fmt.Errorf("algoritmo de firma inesperado: %v", token.Header["alg"])
+	}
+	return j.secret, nil
+}
+
+func (j *JWTAuth) extractClaims(parsedToken *jwt.Token) (*Claims, error) {
+	claims, ok := parsedToken.Claims.(*Claims)
+	if !ok || !parsedToken.Valid {
+		return nil, fmt.Errorf("token inválido o claims malformados")
 	}
 	return claims, nil
 }

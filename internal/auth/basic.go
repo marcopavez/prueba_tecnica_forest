@@ -10,8 +10,8 @@ type BasicAuth struct {
 	password string
 }
 
-func NewBasicAuth(encoded string) *BasicAuth {
-	decoded, err := base64.StdEncoding.DecodeString(encoded)
+func NewBasicAuth(adminCredentials string) *BasicAuth {
+	decoded, err := base64.StdEncoding.DecodeString(adminCredentials)
 	if err != nil {
 		return &BasicAuth{}
 	}

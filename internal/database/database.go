@@ -1,25 +1,41 @@
-package db
+package database
 
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	_ "modernc.org/sqlite"
 )
 
-func New(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite", path+"?_foreign_keys=on&_journal_mode=WAL")
+func Initialize(dbPath string) *sql.DB {
+	// Init DB
+	database, err := new(dbPath)
+	if err != nil {
+		log.Fatalf("failed to open database: %v", err)
+	}
+	defer database.Close()
+
+	if err := migrate(database); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
+
+	return database
+}
+
+func new(path string) (*sql.DB, error) {
+	database, err := sql.Open("sqlite", path+"?_foreign_keys=on&_journal_mode=WAL")
 	if err != nil {
 		return nil, fmt.Errorf("open db: %w", err)
 	}
-	if err := db.Ping(); err != nil {
+	if err := database.Ping(); err != nil {
 		return nil, fmt.Errorf("ping db: %w", err)
 	}
-	return db, nil
+	return database, nil
 }
 
-func Migrate(db *sql.DB) error {
-	stmts := []string{
+func migrate(database *sql.DB) error {
+	statements := []string{
 		`CREATE TABLE IF NOT EXISTS users (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			email TEXT NOT NULL UNIQUE,
@@ -53,8 +69,8 @@ func Migrate(db *sql.DB) error {
 			cost REAL
 		)`,
 	}
-	for _, s := range stmts {
-		if _, err := db.Exec(s); err != nil {
+	for _, statement := range statements {
+		if _, err := database.Exec(statement); err != nil {
 			return fmt.Errorf("migration error: %w", err)
 		}
 	}
