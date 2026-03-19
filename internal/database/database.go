@@ -14,7 +14,6 @@ func Initialize(dbPath string) *sql.DB {
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
-	defer database.Close()
 
 	if err := migrate(database); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)

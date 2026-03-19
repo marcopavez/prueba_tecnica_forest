@@ -24,6 +24,7 @@ func main() {
 
 	// db connection
 	database := database.Initialize(dbPath)
+	defer database.Close()
 
 	// configuration of authentication methods
 	jwtAuth := auth.NewJWTAuth(jwtSecret)

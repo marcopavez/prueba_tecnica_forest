@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   api:
     build: .
@@ -8,10 +7,9 @@ services:
       PORT: 8080
       DB_PATH: /data/bike_rental.db
       JWT_SECRET: change-me-in-production
-      # admin:password
       ADMIN_CREDENTIALS: YWRtaW46cGFzc3dvcmQ=
     volumes:
-      - db_data:/data
+      - ./bike_rental.db:/data/bike_rental.db 
 
 volumes:
   db_data:

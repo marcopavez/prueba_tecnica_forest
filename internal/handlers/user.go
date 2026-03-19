@@ -20,6 +20,7 @@ func NewUserHandler(db *sql.DB, j *auth.JWTAuth) *UserHandler {
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+
 	var req struct {
 		Email     string `json:"email"`
 		Password  string `json:"password"`
@@ -55,10 +56,12 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
+
 	if err := decode(r, &req); err != nil {
 		respondError(w, http.StatusBadRequest, "invalid request body")
 		return
@@ -89,7 +92,9 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+
 	userID := middleware.GetUserID(r)
+
 	var user struct {
 		ID        int64     `json:"id"`
 		Email     string    `json:"email"`
@@ -109,8 +114,10 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+
 	userID := middleware.GetUserID(r)
 	var req struct {
+		Email     *string `json:"email"`
 		FirstName *string `json:"first_name"`
 		LastName  *string `json:"last_name"`
 		Password  *string `json:"password"`
@@ -126,6 +133,10 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	if req.LastName != nil {
 		h.db.ExecContext(r.Context(), `UPDATE users SET last_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, *req.LastName, userID)
 	}
+	if req.Email != nil {
+		h.db.ExecContext(r.Context(), `UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, *req.Email, userID)
+	}
+
 	if req.Password != nil {
 		hashed, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.DefaultCost)
 		if err == nil {

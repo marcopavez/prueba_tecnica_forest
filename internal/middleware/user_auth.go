@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/bikerental/api/internal/auth"
@@ -11,7 +10,7 @@ import (
 
 type contextKey string
 
-const UserIDKey contextKey = "userID"
+const UserIDKey contextKey = "id"
 
 type UserAuth struct {
 	jwt *auth.JWTAuth
@@ -34,12 +33,12 @@ func (u *UserAuth) Authenticate(next http.Handler) http.Handler {
 			http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
 			return
 		}
-		userID, err := strconv.ParseInt(claims.Subject, 10, 64)
-		if err != nil {
+
+		if claims.Subject == 0 {
 			http.Error(w, `{"error":"invalid token subject"}`, http.StatusUnauthorized)
 			return
 		}
-		ctx := context.WithValue(r.Context(), UserIDKey, userID)
+		ctx := context.WithValue(r.Context(), UserIDKey, claims.Subject)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -22,7 +22,7 @@ func TestJWTGenerateAndValidate(t *testing.T) {
 		t.Fatalf("expected no error validating token, got: %v", err)
 	}
 
-	if claims.Subject != "42" {
+	if claims.Subject != 42 {
 		t.Errorf("expected subject '42', got '%s'", claims.Subject)
 	}
 	if claims.Email != "test@example.com" {

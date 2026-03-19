@@ -20,6 +20,7 @@ func NewAdminHandler(db *sql.DB) *AdminHandler {
 // --- Bike Management ---
 
 func (h *AdminHandler) CreateBike(w http.ResponseWriter, r *http.Request) {
+
 	var req struct {
 		Latitude    float64 `json:"latitude"`
 		Longitude   float64 `json:"longitude"`
@@ -42,15 +43,16 @@ func (h *AdminHandler) CreateBike(w http.ResponseWriter, r *http.Request) {
 	}
 	id, _ := result.LastInsertId()
 	respond(w, http.StatusCreated, map[string]any{
-		"id":              id,
-		"is_available":    true,
-		"latitude":        req.Latitude,
-		"longitude":       req.Longitude,
+		"id":               id,
+		"is_available":     true,
+		"latitude":         req.Latitude,
+		"longitude":        req.Longitude,
 		"price_per_minute": req.PricePerMin,
 	})
 }
 
 func (h *AdminHandler) UpdateBike(w http.ResponseWriter, r *http.Request) {
+
 	bikeID, err := strconv.ParseInt(chi.URLParam(r, "bike_id"), 10, 64)
 	if err != nil {
 		respondError(w, http.StatusBadRequest, "invalid bike_id")
@@ -105,6 +107,7 @@ func (h *AdminHandler) UpdateBike(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AdminHandler) ListBikes(w http.ResponseWriter, r *http.Request) {
+
 	rows, err := h.db.QueryContext(r.Context(),
 		`SELECT id, is_available, latitude, longitude, price_per_minute, created_at, updated_at FROM bikes`)
 	if err != nil {
@@ -135,6 +138,7 @@ func (h *AdminHandler) ListBikes(w http.ResponseWriter, r *http.Request) {
 // --- User Management ---
 
 func (h *AdminHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+
 	rows, err := h.db.QueryContext(r.Context(),
 		`SELECT id, email, first_name, last_name, created_at, updated_at FROM users`)
 	if err != nil {

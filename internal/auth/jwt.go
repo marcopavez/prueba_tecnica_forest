@@ -12,9 +12,11 @@ type JWTAuth struct {
 }
 
 type Claims struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+	Subject   int64            `json:"sub"`
+	ExpiresAt *jwt.NumericDate `json:"exp"`
+	Email     string           `json:"email"`
+	FirstName string           `json:"first_name"`
+	LastName  string           `json:"last_name"`
 	jwt.RegisteredClaims
 }
 
@@ -25,13 +27,11 @@ func NewJWTAuth(secret string) *JWTAuth {
 func (j *JWTAuth) Generate(userID int64, email, firstName, lastName string) (string, error) {
 
 	claims := Claims{
+		Subject:   userID,
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
 		Email:     email,
 		FirstName: firstName,
 		LastName:  lastName,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   fmt.Sprintf("%d", userID),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)),
-		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
