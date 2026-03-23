@@ -6,38 +6,38 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/bikerental/api/internal/auth"
-	"github.com/bikerental/api/internal/database"
 	"github.com/bikerental/api/internal/handlers"
+
+	_ "modernc.org/sqlite"
 )
 
 func setupTestDB(t *testing.T) *sql.DB {
 	t.Helper()
-	f, err := os.CreateTemp("", "test-*.db")
+
+	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.Close()
-	t.Cleanup(func() { os.Remove(f.Name()) })
 
-	dbPath := ""
-	database := database.Initialize(dbPath)
+	if err := db.Ping(); err != nil {
+		t.Fatal(err)
+	}
 
-	t.Cleanup(func() { database.Close() })
-	return database
+	t.Cleanup(func() { db.Close() })
+	return db
 }
 
 func TestRegisterAndLogin(t *testing.T) {
 	database := setupTestDB(t)
-	jwtAuth := auth.NewJWTAuth("test-secret")
+	jwtAuth := auth.NewJWTAuth()
 	h := handlers.NewUserHandler(database, jwtAuth)
 
 	// Register
 	body, _ := json.Marshal(map[string]string{
-		"email":      "test@example.com",
+		"email":      "nuevotest123@gmail.com",
 		"password":   "password123",
 		"first_name": "Test",
 		"last_name":  "User",
@@ -53,7 +53,7 @@ func TestRegisterAndLogin(t *testing.T) {
 
 	// Login
 	body, _ = json.Marshal(map[string]string{
-		"email":    "test@example.com",
+		"email":    "test123@example.com",
 		"password": "password123",
 	})
 	req = httptest.NewRequest(http.MethodPost, "/users/login", bytes.NewReader(body))
@@ -73,28 +73,40 @@ func TestRegisterAndLogin(t *testing.T) {
 }
 
 func TestRegisterDuplicateEmail(t *testing.T) {
-	database := setupTestDB(t)
-	jwtAuth := auth.NewJWTAuth("test-secret")
-	h := handlers.NewUserHandler(database, jwtAuth)
+	db := setupTestDB(t)
+	jwtAuth := auth.NewJWTAuth()
+	h := handlers.NewUserHandler(db, jwtAuth)
 
-	body, _ := json.Marshal(map[string]string{
-		"email": "dup@example.com", "password": "pass", "first_name": "A", "last_name": "B",
-	})
-
-	for i := 0; i < 2; i++ {
+	registerUser := func() *httptest.ResponseRecorder {
+		body, _ := json.Marshal(map[string]string{
+			"email":      "dzxczxcup@example.com",
+			"password":   "password123",
+			"first_name": "John",
+			"last_name":  "Doe",
+		})
 		req := httptest.NewRequest(http.MethodPost, "/users/register", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		h.Register(w, req)
-		if i == 1 && w.Code != http.StatusConflict {
-			t.Fatalf("expected 409 on duplicate, got %d", w.Code)
-		}
+		return w
+	}
+
+	// primer registro — debe ser exitoso
+	firstResponse := registerUser()
+	if firstResponse.Code != http.StatusCreated {
+		t.Fatalf("first registration: expected 201, got %d: %s", firstResponse.Code, firstResponse.Body.String())
+	}
+
+	// segundo registro con el mismo email — debe fallar
+	secondResponse := registerUser()
+	if secondResponse.Code != http.StatusConflict {
+		t.Fatalf("duplicate registration: expected 409, got %d: %s", secondResponse.Code, secondResponse.Body.String())
 	}
 }
 
 func TestLoginWrongPassword(t *testing.T) {
 	database := setupTestDB(t)
-	jwtAuth := auth.NewJWTAuth("test-secret")
+	jwtAuth := auth.NewJWTAuth()
 	h := handlers.NewUserHandler(database, jwtAuth)
 
 	// Register first

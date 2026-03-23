@@ -25,8 +25,9 @@ type bikeRow struct {
 }
 
 func (h *BikeHandler) ListAvailable(w http.ResponseWriter, r *http.Request) {
+
 	rows, err := h.db.QueryContext(r.Context(),
-		`SELECT id, is_available, latitude, longitude, price_per_minute, created_at, updated_at FROM bikes WHERE is_available = 1`)
+		`SELECT id, is_available, latitude, longitude, price_per_minute, created_at, updated_at FROM bikes WHERE is_available = ?`)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "could not fetch bikes")
 		return

@@ -4,12 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "modernc.org/sqlite"
 )
 
-func Initialize(dbPath string) *sql.DB {
-	// Init DB
+func Initialize() *sql.DB {
+
+	dbPath := os.Getenv("DB_PATH")
+
 	database, err := new(dbPath)
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)

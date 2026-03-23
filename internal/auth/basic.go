@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/base64"
+	"os"
 	"strings"
 )
 
@@ -10,7 +11,10 @@ type BasicAuth struct {
 	password string
 }
 
-func NewBasicAuth(adminCredentials string) *BasicAuth {
+func NewBasicAuth() *BasicAuth {
+
+	adminCredentials := os.Getenv("ADMIN_CREDENTIALS")
+
 	decoded, err := base64.StdEncoding.DecodeString(adminCredentials)
 	if err != nil {
 		return &BasicAuth{}

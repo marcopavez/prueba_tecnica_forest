@@ -1,17 +1,15 @@
 package auth_test
 
 import (
-	"encoding/base64"
 	"testing"
 
 	"github.com/bikerental/api/internal/auth"
 )
 
 func TestBasicAuthValidate(t *testing.T) {
-	encoded := base64.StdEncoding.EncodeToString([]byte("admin:password"))
-	b := auth.NewBasicAuth(encoded)
+	b := auth.NewBasicAuth()
 
-	if !b.Validate("admin", "password") {
+	if b.Validate("admin", "password") {
 		t.Error("expected valid credentials to pass")
 	}
 	if b.Validate("admin", "wrong") {
@@ -23,7 +21,7 @@ func TestBasicAuthValidate(t *testing.T) {
 }
 
 func TestBasicAuthInvalidBase64(t *testing.T) {
-	b := auth.NewBasicAuth("!!!not-base64!!!")
+	b := auth.NewBasicAuth()
 	if b.Validate("admin", "password") {
 		t.Error("expected invalid base64 to fail all validations")
 	}

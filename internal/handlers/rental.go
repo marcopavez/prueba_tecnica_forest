@@ -18,26 +18,6 @@ func NewRentalHandler(db *sql.DB) *RentalHandler {
 	return &RentalHandler{db: db}
 }
 
-// randomLocationWithin5km generates a random lat/lng within 5km of the given point
-func randomLocationWithin5km(lat, lng float64) (float64, float64) {
-	// Earth radius in km
-	const earthRadius = 6371.0
-	const maxDistKm = 5.0
-
-	// Random distance and bearing
-	dist := rand.Float64() * maxDistKm
-	bearing := rand.Float64() * 2 * math.Pi
-
-	latRad := lat * math.Pi / 180
-	lngRad := lng * math.Pi / 180
-	dr := dist / earthRadius
-
-	newLat := math.Asin(math.Sin(latRad)*math.Cos(dr) + math.Cos(latRad)*math.Sin(dr)*math.Cos(bearing))
-	newLng := lngRad + math.Atan2(math.Sin(bearing)*math.Sin(dr)*math.Cos(latRad), math.Cos(dr)-math.Sin(latRad)*math.Sin(newLat))
-
-	return newLat * 180 / math.Pi, newLng * 180 / math.Pi
-}
-
 func (h *RentalHandler) Start(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
 
@@ -236,4 +216,13 @@ func (h *RentalHandler) History(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	respond(w, http.StatusOK, rentals)
+}
+
+func randomLocationWithin5km(lat, lng float64) (float64, float64) {
+	const maxOffsetDegrees = 0.04 // ~5km en grados
+
+	latOffset := (rand.Float64()*2 - 1) * maxOffsetDegrees
+	lngOffset := (rand.Float64()*2 - 1) * maxOffsetDegrees
+
+	return lat + latOffset, lng + lngOffset
 }

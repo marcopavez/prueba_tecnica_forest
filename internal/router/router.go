@@ -25,12 +25,14 @@ func (router *NewRouter) Route() {
 }
 
 func (router *NewRouter) userRoutes() {
-	// User routes
+
 	router.ChiMux.Post("/users/register", router.User.Register)
 	router.ChiMux.Post("/users/login", router.User.Login)
 
 	router.ChiMux.Group(func(r chi.Router) {
+
 		r.Use(router.UserAuthMiddleware.Authenticate)
+
 		r.Get("/users/profile", router.User.GetProfile)
 		r.Patch("/users/profile", router.User.UpdateProfile)
 
@@ -43,9 +45,10 @@ func (router *NewRouter) userRoutes() {
 }
 
 func (router *NewRouter) adminRouter() {
-	// Admin routes
 	router.ChiMux.Group(func(r chi.Router) {
+
 		r.Use(router.AdminAuthMiddleware.Authenticate)
+
 		r.Post("/admin/bikes", router.Admin.CreateBike)
 		r.Patch("/admin/bikes/{bike_id}", router.Admin.UpdateBike)
 		r.Get("/admin/bikes", router.Admin.ListBikes)

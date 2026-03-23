@@ -1,43 +1,38 @@
 # Bike Rental API
 
-A RESTful API service for a bike rental company written in Go.
+A RESTful API service for a test based on a bike rental company written in Go.
 
 ## Tech Stack
 
-- **Language**: Go 1.21+
+- **Language**: Go 1.25+
 - **Router**: go-chi/chi v5
-- **Database**: SQLite (via mattn/go-sqlite3)
+- **Database**: SQLite (via modernc.org/sqlite)
 - **Auth**: JWT (user) + Basic Auth (admin)
 
 ## Quick Start
 
 ### Environment Variables
 
-| Variable           | Default                     | Description                        |
-|--------------------|-----------------------------|------------------------------------|
-| `PORT`             | `8080`                      | Server port                        |
-| `DB_PATH`          | `./bike_rental.db`          | SQLite database file path          |
-| `JWT_SECRET`       | `default-secret-for-testing`| HMAC SHA256 secret for JWT signing |
-| `ADMIN_CREDENTIALS`| `YWRtaW46cGFzc3dvcmQ=`      | Base64 of `username:password`      |
+| Variable           | Default                           | Description                        |
+|--------------------|-----------------------------------|------------------------------------|
+| `PORT`             | `8080`                            | Server port                        |
+| `DB_PATH`          | `/data/bike_rental.db`            | SQLite database file path          |
+| `JWT_SECRET`       | `secreto_jwt_prueba_golang_forest`| HMAC SHA256 secret for JWT signing |
+| `ADMIN_CREDENTIALS`| `YWRtaW46cGFzc3dvcmQ=`            | Base64 of `username:password`      |
 
 Default admin credentials: `admin:password`
 
-### Run Locally
+### Run Locally (from project root folder)
 
 ```bash
 go mod tidy
-JWT_SECRET=mysecret ADMIN_CREDENTIALS=YWRtaW46cGFzc3dvcmQ= go run ./cmd/main.go
+go run ./cmd/main.go
 ```
 
-### Run with Docker
+### Run with Docker (from project root folder)
 
 ```bash
-docker build -t bike-rental .
-docker run -p 8080:8080 \
-  -e JWT_SECRET=mysecret \
-  -e ADMIN_CREDENTIALS=YWRtaW46cGFzc3dvcmQ= \
-  -v $(pwd)/data:/data \
-  bike-rental
+docker compose up --build
 ```
 
 ## API Reference
@@ -175,25 +170,31 @@ PATCH  /admin/rentals/{rental_id}
 ```
 .
 ├── cmd/
-│   └── main.go               # Entry point, router setup
+│   ├── bike_rental.db
+│   └── main.go               # Entry point
 ├── internal/
 │   ├── auth/
 │   │   ├── jwt.go            # JWT generation & validation
 │   │   └── basic.go          # Basic Auth validation
-│   ├── db/
-│   │   └── db.go             # DB connection & migrations
+│   ├── database/
+│   │   └── database.go       # DB connection & migrations
 │   ├── handlers/
 │   │   ├── helpers.go        # JSON helpers
-│   │   ├── user.go           # User endpoints
-│   │   ├── bike.go           # Bike endpoints
-│   │   ├── rental.go         # Rental endpoints
-│   │   └── admin.go          # Admin endpoints
+│   │   ├── user.go           # User business logic
+│   │   ├── bike.go           # Bike business logic
+│   │   ├── rental.go         # Rental business logic
+│   │   └── admin.go          # Admin business logic
 │   ├── middleware/
 │   │   ├── user_auth.go      # JWT middleware
 │   │   └── admin_auth.go     # Basic Auth middleware
-│   └── models/
-│       └── models.go         # Data models
+│   ├── models/
+│   │    └── models.go        # Data models
+│   └── router/
+│        └── router.go        # Handlers routes/endpoints
+├── .env
 ├── Dockerfile
+├── docker-compose.yml
 ├── go.mod
+├── go.sum
 └── README.md
 ```

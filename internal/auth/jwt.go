@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,8 +21,11 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewJWTAuth(secret string) *JWTAuth {
-	return &JWTAuth{secret: []byte(secret)}
+func NewJWTAuth() *JWTAuth {
+
+	jwtSecret := os.Getenv("JWT_SECRET")
+
+	return &JWTAuth{secret: []byte(jwtSecret)}
 }
 
 func (j *JWTAuth) Generate(userID int64, email, firstName, lastName string) (string, error) {
